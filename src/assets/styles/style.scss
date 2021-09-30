@@ -1,0 +1,67 @@
+@import './Calendar.scss';
+
+
+nav ul {
+    padding: 0px !important;
+    border: 1px solid #555;
+}
+nav ul li {
+    list-style: none;
+    height: 40px;
+    text-align: center;
+    border-bottom: 1px solid #555;
+   
+}
+li:last-child {
+    border-bottom: none;
+}
+li a:hover {
+    background-color: #555;
+    color: white;
+}
+
+nav ul li a {
+    display: block;
+    color: #000;
+    padding: 8px 16px;
+    text-decoration: none;
+}
+nav ul li a.active {
+    background-color: #62b8e0;
+    color: white !important;
+    border-bottom: 1px solid #555;
+}
+
+#deleteButton {
+    margin-left: 20px;
+}
+
+#room-component {
+    float: left;
+    width: 90%;
+    margin-left: 5%;
+    padding: 20px;
+}
+
+#room-component h2{
+    
+    margin-bottom: 20px;
+}
+
+.react-bootstrap-table-page-btns-ul {
+    float: right;
+}
+
+.App h2 {
+    margin-top: 20px;
+}
+
+.foo {
+    background-color: #62b8e0;
+    color: white;
+}
+
+.addNewRoom {
+    float: left;
+    margin-bottom: 3px !important;
+}
