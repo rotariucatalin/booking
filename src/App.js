@@ -1,15 +1,11 @@
-import { ArrowLeft } from '@material-ui/icons';
 import React from 'react';
 import './App.css';
 import Calender from './components/Calender';
 import bookingData from './data/bookings';
-import roomData from './data/rooms';
 import BookingHelper from './helpers/BookingHelper';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
-import Select from 'react-select';
 import RoomComponent from './components/RoomComponent';
 import {Tabs, Tab} from 'react-bootstrap';
-import {useState, useEffect, useReducer} from 'react';
+import {useReducer} from 'react';
 
 function reducer(state, action) {
 
@@ -39,7 +35,7 @@ function App() {
     {
       id:1,
       title:"Studio (20)",
-      beds: 20
+      beds: 40
     },
     {
       id:2,
@@ -59,6 +55,7 @@ function App() {
     book.to_date = BookingHelper.formatDate(today);
     return book;
   });
+
 
   let currentDate = new Date();
   //let viewStartDate = BookingHelper.formatDate(currentDate.setDate( currentDate.getDate() - 100 ));

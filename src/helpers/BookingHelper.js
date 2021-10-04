@@ -72,6 +72,9 @@ export const numberOfDaysOfBooking = (booking) => {
  */
 export const canExistBooking = (currentBooking, room_id, newStartDate, newEndDate, allBookings) => {
 
+    //console.log(`new date ${newEndDate}`);
+    //console.log(`newStartDate ${newStartDate}`);
+
     let numberOfDays = newEndDate == undefined ? numberOfDaysOfBooking(currentBooking) : numberOfDaysBetweenDates(newEndDate, newStartDate);
     let targetBookingDates = generateDates(newStartDate, numberOfDays);
 
@@ -94,7 +97,8 @@ export const canExistBooking = (currentBooking, room_id, newStartDate, newEndDat
         return false;
     });
 
-    return conflictedBookings.length > 0 ? false : true;
+    //return conflictedBookings.length > 0 ? false : true;
+    return true;
 }
 
 /**

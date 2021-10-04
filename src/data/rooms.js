@@ -7,7 +7,7 @@ export default  [
       tag:[
         "non-ac","single"
       ],
-      beds: 20
+      beds: 40
     },
     {
       id:2,

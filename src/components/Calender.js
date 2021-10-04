@@ -3,14 +3,11 @@ import ScrollContainer from 'react-indiana-drag-scroll';
 import './../assets/styles/style.scss';
 
 import Room from './Room';
-import Booking from './Booking';
 import { DndProvider } from 'react-dnd'
 import HTML5Backend from 'react-dnd-html5-backend'
 import CalendarContext from './CalendarContext';
 import BookingHelper from '../helpers/BookingHelper';
 import BookingPopup from './popups/BookingPopup';
-import FilterCalendar from './FilterCalendar';
-
 
 class Calender extends Component {
 
@@ -33,6 +30,7 @@ class Calender extends Component {
         this.actionClosePopup = this.actionClosePopup.bind(this);
         this.actionCanExistBooking = this.actionCanExistBooking.bind(this);
         this.actionCreateBooking = this.actionCreateBooking.bind(this);
+        this.actionRemoveGuest = this.actionRemoveGuest.bind(this);
     }
 
     componentDidMount() {
@@ -68,7 +66,7 @@ class Calender extends Component {
         if (this.state.viewStartDate != null) {
             day = new Date(this.state.viewStartDate);
         }
-        console.log(day);
+        
         this.state.dates.push(new Date(day.setDate(day.getDate())));
         for (let aa = 0; aa < 70; aa++) {
             let newDay = new Date(day.setDate(day.getDate() + 1));
@@ -139,7 +137,7 @@ class Calender extends Component {
      * @param {*} newEndDate
      */
     actionMoveBooking(singleBooking, room, newStartDate, newEndDate) {
-
+        
         let allBookings = BookingHelper.moveBooking(singleBooking, room, newStartDate, newEndDate, this.state.bookings);
         if (allBookings === false) {
             console.log('Unable to move to target date');
@@ -166,6 +164,19 @@ class Calender extends Component {
         } else {
             console.log('Cannot create booking');
         }
+    }
+
+    actionRemoveGuest(bk) {
+
+        console.log(this.state);
+        this.state.bookings.filter( booking => {
+            if(booking.id === bk.id) {
+                booking.guests = bk.guests;
+            }
+        })
+        //console.log(booking);
+        //this.state.bookings[1].guests = booking.guests;
+        //console.log(this.state);
     }
 
     /**
@@ -220,10 +231,11 @@ class Calender extends Component {
             actionOpenPopup: this.actionOpenPopup,
             actionClosePopup: this.actionClosePopup,
             actionCreateBooking: this.actionCreateBooking,
+            actionRemoveGuest: this.actionRemoveGuest,
         };
         
         // show hide booking popup
-        let bookingPopup = this.state.popup.show ? <BookingPopup deleteRezervation={ () => this.deleteRezervation(this.state.popup.booking.id) } data={this.state.popup}></BookingPopup> : null;
+        let bookingPopup = this.state.popup.show ? <BookingPopup deleteGuest={() => this.deleteGuest("22")} bookings={this.state.bookings} deleteRezervation={ () => this.deleteRezervation(this.state.popup.booking.id) } data={this.state.popup}></BookingPopup> : null;
 
         // check if callback is set inorder to get booking data
         if (this.props.bookingDataCallback) {

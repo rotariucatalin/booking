@@ -33,7 +33,7 @@ body {
 .r-calendar-main-table thead th {font-weight: normal;cursor: col-resize; }
 .r-calendar-head-date {color: #333;}
 .r-calendar-head-month, .r-calendar-main-table tr td:first-child > div {color: #666;font-size: .8em;padding: 0 7px;text-transform: uppercase;}
-.r-calendar-main-table tr td:first-child > div {border-right: 1px solid $primaryBG;}
+.r-calendar-main-table tr td:first-child > div {}
 
 .booking {background:hsla(221, 97%, 46%, 0.9);padding: 0px;z-index: 1;position: relative;line-height: 3em;color: #fff;width: 100%;}
 

@@ -7,7 +7,7 @@ function Booking(props) {
 
     // load default context
     const context = useContext(CalendarContext);
-
+    //console.log(context);
     // enable dragging of component
     const [{ isDragging }, drag] = useDrag({
         item: { type: ItemTypes.BOOKING, singleBooking:props.book },
@@ -18,8 +18,9 @@ function Booking(props) {
 
     // generate random background color for a booking
     const bgColor = () => {
-        let h = ((new Date(props.book.from_date)).getTime() * 21 * props.book.room_id) % 255;
-        return "hsla("+h+", 29%, 60%, 0.9)";
+        //let h = ((new Date(props.book.from_date)).getTime() * 21 * props.book.room_id * Math.floor(Math.random() * 10000)) % 255;
+        //return "hsla("+h+", 29%, 60%, 0.9)";
+        return '#'+Math.floor(Math.random()*16777215).toString(16);
     }
 
     // get inner content of the booking
@@ -53,10 +54,13 @@ function Booking(props) {
     if (number_of_days > 0) {
         let style = {
             width: (number_of_days * 100) + '%',
-            backgroundColor:bgColor()
+            backgroundColor:bgColor(),
+            marginTop: (props.count * 48) + 'px'
+            
         };
         return (
-            <div onClick={(event) => {context.actionOpenPopup(props.book);event.stopPropagation();event.preventDefault();}} ref={drag} className="booking"  style={style} >
+            // <div onClick={(event) => {context.actionOpenPopup(props.book);event.stopPropagation();event.preventDefault();}} ref={drag} className="booking"  style={style} >
+            <div onClick={(event) => {context.actionOpenPopup(props.book);event.stopPropagation();event.preventDefault();}} className="booking"  style={style} >
                 <div title={getTitle()} className="booking-inner">{getContent()}</div>
             </div>
         );

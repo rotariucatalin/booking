@@ -25,6 +25,7 @@ function BookingPopup(props) {
         from_date:new Date(),
         to_date: new Date(),
         guests:[],
+        beds: 0,
         checkAvailability: true
     }, props.data.booking, );
     
@@ -46,10 +47,52 @@ function BookingPopup(props) {
     const context = useContext(CalendarContext);
 
     const checkAvailabilityHandler = (e) => {
-        
-        let status = context.actionCanExistBooking(state, state.room_id, state.from_date, state.to_date);
-        if (status == false) {
-            alert('This booking conflicts with other booking');
+
+        let varAux = document.querySelectorAll('.card-header.text-center')[0].childNodes[0].childNodes[0].innerText;
+
+        let available = true;
+        let currentRoom = context.data.rooms.filter( room => room.id === context.data.popup.booking.room_id );
+        let bookingsForCurrentRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
+        let daysForCurrentBooking = getDates(state.from_date, state.to_date);
+
+        daysForCurrentBooking.forEach( (day) => {
+
+            let currentDateTime = new Date(convertDate(day)).getTime();
+            let totalOcupatedBeds = 0;
+
+            bookingsForCurrentRoom.forEach( bk => {
+                
+                let datesBooking = BookingHelper.getAllBookingDates(bk);
+                
+                datesBooking.forEach( (bkDay) => {
+                    let currentBkDay = new Date(convertDate(bkDay)).getTime();
+                    
+                    if(currentBkDay === currentDateTime) {
+                        
+                        bk.guests.forEach( guest => {
+
+                            totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
+                            
+                        })
+                        if(varAux !== "Editeaza Rezervare") {
+                            state.guests.forEach( currentBk => {
+                                totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
+                            });
+                        }
+                    }
+                });
+            })
+            console.log(totalOcupatedBeds);
+            if(totalOcupatedBeds > currentRoom[0].beds) {
+                available = false;
+                
+            }
+
+        } );
+    
+        //let status = context.actionCanExistBooking(state, state.room_id, state.from_date, state.to_date);
+        if (available === false) {
+            alert('Paturi indisponibile');
         } else {
             let newState = {...state};
             newState.checkAvailability = false;
@@ -59,20 +102,92 @@ function BookingPopup(props) {
         e.preventDefault();
     }
 
+    // Returns an array of dates between the two dates
+    function getDates (startDate, endDate) {
+
+        const dates = []
+        let currentDate = startDate
+        const addDays = function (days) {
+            const date = new Date(this.valueOf())
+            date.setDate(date.getDate() + days)
+            return date
+        }
+        while (currentDate <= endDate) {
+            dates.push(currentDate)
+            currentDate = addDays.call(currentDate, 1)
+        }
+        return dates;
+
+    }
+
+    function convertDate(str) {
+        var date = new Date(str),
+          mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+          day = ("0" + date.getDate()).slice(-2);
+        return [date.getFullYear(), mnth, day].join("-");
+      }
+
     const confirmBookingHandler = (e) => {
-        if (props.data.booking.id == null) {
-            if(state.guests.length === 0) {
-                alert("Adauga cel putin 1 persoana in camera");
-            } else {
-                state.id = BookingHelper.guid();
-                context.actionCreateBooking(state);
-                context.actionClosePopup();
+
+        let varAux = document.querySelectorAll('.card-header.text-center')[0].childNodes[0].childNodes[0].innerText;
+        let available = true;
+        let currentRoom = context.data.rooms.filter( room => room.id === context.data.popup.booking.room_id );
+        let bookingsForCurrentRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
+        let daysForCurrentBooking = getDates(state.from_date, state.to_date);
+
+        daysForCurrentBooking.forEach( (day) => {
+
+            let currentDateTime = new Date(convertDate(day)).getTime();
+            let totalOcupatedBeds = 0;
+
+            bookingsForCurrentRoom.forEach( bk => {
+                
+                let datesBooking = BookingHelper.getAllBookingDates(bk);
+                
+                datesBooking.forEach( (bkDay) => {
+                    let currentBkDay = new Date(convertDate(bkDay)).getTime();
+                    
+                    if(currentBkDay === currentDateTime) {
+                        
+                        bk.guests.forEach( guest => {
+
+                            totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
+                            
+                        })
+
+                        if(varAux !== "Editeaza Rezervare") {
+                            state.guests.forEach( currentBk => {
+                                totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
+                            });
+                        }
+                    }
+                });
+            })
+            console.log(totalOcupatedBeds);
+            if(totalOcupatedBeds > currentRoom[0].beds) {
+                available = false;
                 
             }
-            
+
+        } );
+        
+        if (available === false) {
+            alert('Paturi indisponibile');
         } else {
-            context.actionMoveBooking(state, state.room_id, state.from_date, state.to_date);
-            context.actionClosePopup();
+            if (props.data.booking.id == null) {
+                if(state.guests.length === 0) {
+                    alert("Adauga cel putin 1 persoana in camera");
+                } else {
+                    state.id = BookingHelper.guid();
+                    context.actionCreateBooking(state);
+                    context.actionClosePopup();
+                    
+                }
+                
+            } else {
+                context.actionMoveBooking(state, state.room_id, state.from_date, state.to_date);
+                context.actionClosePopup();
+            }
         }
         
         e.preventDefault();
@@ -83,33 +198,113 @@ function BookingPopup(props) {
         const filterGuest = state.guests.filter( (guest) => guest.id !== guestId);
         let newState = {...state, guests: filterGuest};
         setState(newState);
-
+        context.actionRemoveGuest(newState);
         e.preventDefault();
     }
 
     const addGuestHandler = (e) => {
-        if (document.querySelector('[name=new_guest_name]').value != '' && document.querySelector('[name=new_guest_age]').value != '') {
-            let newState = {...state};
-            newState.guests.push({
-                name:document.querySelector('[name=new_guest_name]').value,
-                age:document.querySelector('[name=new_guest_age]').value,
-                security_number: document.querySelector('[name=new_guest_security_no]').value
+
+        let intervalFound = false;
+        let available = true;
+        let varAux = document.querySelectorAll('.card-header.text-center')[0].childNodes[0].childNodes[0].innerText;
+        let currentRoom = context.data.rooms.filter( room => room.id === context.data.popup.booking.room_id );
+        let bookingsForCurrentRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
+        let daysForCurrentBooking = getDates(state.from_date, state.to_date);
+
+        daysForCurrentBooking.forEach( (day) => {
+            let currentDateTime = new Date(convertDate(day)).getTime();
+
+            bookingsForCurrentRoom.forEach( bk => {
+                let datesBooking = BookingHelper.getAllBookingDates(bk);
+                datesBooking.forEach( (bkDay) => {
+                    let currentBkDay = new Date(convertDate(bkDay)).getTime();
+                    if(currentBkDay === currentDateTime) intervalFound = true;
+                });
             });
-            setState(newState);
-            document.querySelector('[name=new_guest_name]').value = '';
-            document.querySelector('[name=new_guest_age]').value = '';
-            document.querySelector('[name=new_guest_security_no]').value = '';
+        });
+
+        //If the inverval intersects with other interval for this booking
+        //We hate to get that booking and get all the used beds
+        if(intervalFound) {
+
+            daysForCurrentBooking.forEach( (day) => {
+
+                let currentDateTime = new Date(convertDate(day)).getTime();
+                let totalOcupatedBeds = 0;
+
+                bookingsForCurrentRoom.forEach( bk => {
+                   
+                    let datesBooking = BookingHelper.getAllBookingDates(bk);
+
+                    datesBooking.forEach( (bkDay) => {
+                        let currentBkDay = new Date(convertDate(bkDay)).getTime();
+                        
+                        if(currentBkDay === currentDateTime) {
+                            
+                            bk.guests.forEach( guest => {
+                                totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
+                            })
+    
+                            if(varAux === "Rezervare Noua") {
+                                state.guests.forEach( currentBk => {
+                                    totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
+                                });
+                            }
+                        }
+                    });
+                });
+
+                totalOcupatedBeds = parseInt(document.querySelector('[name=new_guest_beds]').value) + totalOcupatedBeds;
+                if(totalOcupatedBeds > currentRoom[0].beds) {
+                    available = false;
+                }
+            });
+
+        } else {
+
+            let totalOcupatedBeds = 0;
+
+            state.guests.forEach( ( guest ) => {
+                totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
+            });
+
+            totalOcupatedBeds = parseInt(document.querySelector('[name=new_guest_beds]').value) + parseInt(totalOcupatedBeds);
+
+            if(totalOcupatedBeds > currentRoom[0].beds) {
+                available = false;
+            }
         }
+
+        if (available === false) {
+            alert('Paturi indisponibile');
+        } else {
+            if (document.querySelector('[name=new_guest_name]').value !== '' && document.querySelector('[name=new_guest_age]').value != '' && parseInt(document.querySelector('[name=new_guest_beds]').value) > 0) {
+                let newState = {...state};
+                newState.guests.push({
+                    id:BookingHelper.guid(),
+                    name:document.querySelector('[name=new_guest_name]').value,
+                    age:document.querySelector('[name=new_guest_age]').value,
+                    beds:document.querySelector('[name=new_guest_beds]').value,
+                    security_number: document.querySelector('[name=new_guest_security_no]').value
+                });
+                setState(newState);
+                document.querySelector('[name=new_guest_name]').value = '';
+                document.querySelector('[name=new_guest_age]').value = '';
+                document.querySelector('[name=new_guest_beds]').value = '';
+                document.querySelector('[name=new_guest_security_no]').value = '';
+            }
+        }
+
         e.preventDefault();
     };
 
-    let style = props.data.show == false ? {display:"none",zIndex:-1} : {display:'block',zIndex:10};
+    let style = props.data.show === false ? {display:"none",zIndex:-1} : {display:'block',zIndex:10};
 
     const changeCount = (name, direction, event) => {
         let input = document.querySelector('input[name='+name+']');
-        let inputValue = input.value != "" ? input.value : 0;
+        let inputValue = input.value !== "" ? input.value : 0;
         
-        if (direction == 'up') {
+        if (direction === 'up') {
             inputValue++;
         } else if (inputValue > 0) {
             inputValue--;
@@ -132,6 +327,30 @@ function BookingPopup(props) {
         e.preventDefault();
     }
 
+    function setInputFilter(textbox, inputFilter) {
+        ["input", "keydown", "keyup", "mousedown", "mouseup", "select", "contextmenu", "drop"].forEach(function(event) {
+          textbox.addEventListener(event, function() {
+            if (inputFilter(this.value)) {
+              this.oldValue = this.value;
+              this.oldSelectionStart = this.selectionStart;
+              this.oldSelectionEnd = this.selectionEnd;
+            } else if (this.hasOwnProperty("oldValue")) {
+              this.value = this.oldValue;
+              this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+            } else {
+              this.value = "";
+            }
+          });
+        });
+      }
+    
+    function validateInput(e) {
+        setInputFilter(document.getElementById("nrOfBeds"), function(value) {
+            return /^\d*$/.test(value) && (parseInt(value) > 0); 
+        });
+
+    }
+
     let bottomActionButton = null;
     if (state.checkAvailability) {
         bottomActionButton = <button className="btn btn-danger" onClick={(e) => checkAvailabilityHandler(e)}>Verifica disponibilitate</button>;
@@ -150,6 +369,7 @@ function BookingPopup(props) {
         return <tr id={guest.id} key={index}>
                 <td>{index + 1}</td>
                 <td>{guest.name}</td>
+                <td>{guest.beds}</td>
                 <td>{guest.age}</td>
                 <td>{guest.security_number}</td>
                 <td><button className="btn btn-danger" onClick={(e) => removeGuestHandler(e, guest.id)}>Sterge</button></td>
@@ -169,7 +389,7 @@ function BookingPopup(props) {
                         </h5>
                     </div>
                     <div className="card-body">
-                        <form action="" className="form">
+                        <form action="" className="form" autoComplete="off">
 
                             <div className="row">
                                 <div className="col-md-4 ">
@@ -199,6 +419,7 @@ function BookingPopup(props) {
                                     <tr>
                                         <th>#</th>
                                         <th>Nume</th>
+                                        <th>Paturi</th>
                                         <th>Telefon</th>
                                         <th>Judet/Localitate</th>
                                         <th>#</th>
@@ -212,6 +433,9 @@ function BookingPopup(props) {
                                         <td></td>
                                         <td>
                                             <input type="text" className="form-control" name="new_guest_name" placeholder="Nume" />
+                                        </td>
+                                        <td>
+                                            <input type="text" className="form-control" name="new_guest_beds" onKeyPress={validateInput} id="nrOfBeds" placeholder="Paturi" />
                                         </td>
                                         <td>
                                             <input type="text" className="form-control" name="new_guest_age" placeholder="Telefon" />
