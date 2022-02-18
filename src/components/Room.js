@@ -13,8 +13,9 @@ function Room(props) {
         
         // get all booking for current day
         let bookinksToday = props.bookings.filter(singleBook => {
-            let from_date = new Date(singleBook.from_date);
-            return (from_date.toDateString() === day.toDateString() && singleBook.room_id === props.room.id) ? true : false;
+            
+            let startDate = new Date(singleBook.startDate);
+            return (startDate.toDateString() === day.toDateString() && singleBook.room_id === props.room.id) ? true : false;
         });
         
         let bookinksTodayJsx = "";
@@ -30,13 +31,14 @@ function Room(props) {
                     return <Booking book={singleBook} key={singleBook.id} count={count} />;
             });
         } else {
+            
             if(bookinksToday.length > 0) {
                 bookinksTodayJsx = bookinksToday.map((singleBook) => {
+                    
                     count++;
                     return <Booking book={singleBook} key={singleBook.id} count={count} />;
                 });
             }
-            
         }
 
         return <RoomDate key={index} day={day} room={props.room} cellWidth={props.cellWidth}>{bookinksTodayJsx}</RoomDate>
@@ -46,7 +48,6 @@ function Room(props) {
         <td><div>{props.room.title}</div></td>
         {daysTd}
     </tr>);
-
 }
 
 export default Room;

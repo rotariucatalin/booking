@@ -8,27 +8,22 @@ import BookingHelper from './../../helpers/BookingHelper';
 function BookingPopup(props) {
     
     // enter default from_date
-    if (props.data.booking && props.data.booking.from_date != null) {
-        props.data.booking.from_date = new Date(props.data.booking.from_date);
-        props.data.booking.to_date = new Date(props.data.booking.to_date);   
+    if (props.data.booking && props.data.booking.startDate != null) {
+        props.data.booking.startDate = new Date(props.data.booking.startDate);
+        props.data.booking.endDate = new Date(props.data.booking.endDate);   
     }
 
     let booking = Object.assign({
         id : null,
         room_id: null,
-        guest_name:'New resv',
-        objective:'',
-        unit:'',
-        channel:null,
-        adult_count:0,
-        child_count:0,  
-        from_date:new Date(),
-        to_date: new Date(),
-        guests:[],
-        beds: 0,
+        name:'New resv',
+        additionalInformation:'',
+        startDate:new Date(),
+        endDate: new Date(),
+        noBeds: 0,
         checkAvailability: true
     }, props.data.booking, );
-    
+
     const [state, setState] = useState( booking );
 
     const onChangeHandler = (event) => {
@@ -53,7 +48,7 @@ function BookingPopup(props) {
         let available = true;
         let currentRoom = context.data.rooms.filter( room => room.id === context.data.popup.booking.room_id );
         let bookingsForCurrentRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
-        let daysForCurrentBooking = getDates(state.from_date, state.to_date);
+        let daysForCurrentBooking = getDates(state.startDate, state.endDate);
 
         daysForCurrentBooking.forEach( (day) => {
 
@@ -69,20 +64,19 @@ function BookingPopup(props) {
                     
                     if(currentBkDay === currentDateTime) {
                         
-                        bk.guests.forEach( guest => {
+                        // bk.guests.forEach( guest => {
 
-                            totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
+                        //     totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
                             
-                        })
+                        // })
                         if(varAux !== "Editeaza Rezervare") {
-                            state.guests.forEach( currentBk => {
-                                totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
-                            });
+                            // state.guests.forEach( currentBk => {
+                            //     totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
+                            // });
                         }
                     }
                 });
             })
-            console.log(totalOcupatedBeds);
             if(totalOcupatedBeds > currentRoom[0].beds) {
                 available = false;
                 
@@ -122,8 +116,8 @@ function BookingPopup(props) {
 
     function convertDate(str) {
         var date = new Date(str),
-          mnth = ("0" + (date.getMonth() + 1)).slice(-2),
-          day = ("0" + date.getDate()).slice(-2);
+            mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+            day = ("0" + date.getDate()).slice(-2);
         return [date.getFullYear(), mnth, day].join("-");
       }
 
@@ -133,7 +127,7 @@ function BookingPopup(props) {
         let available = true;
         let currentRoom = context.data.rooms.filter( room => room.id === context.data.popup.booking.room_id );
         let bookingsForCurrentRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
-        let daysForCurrentBooking = getDates(state.from_date, state.to_date);
+        let daysForCurrentBooking = getDates(state.startDate, state.endDate);
 
         daysForCurrentBooking.forEach( (day) => {
 
@@ -149,21 +143,20 @@ function BookingPopup(props) {
                     
                     if(currentBkDay === currentDateTime) {
                         
-                        bk.guests.forEach( guest => {
+                        // bk.guests.forEach( guest => {
 
-                            totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
+                        //     totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
                             
-                        })
+                        // })
 
                         if(varAux !== "Editeaza Rezervare") {
-                            state.guests.forEach( currentBk => {
-                                totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
-                            });
+                            // state.guests.forEach( currentBk => {
+                            //     totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
+                            // });
                         }
                     }
                 });
             })
-            console.log(totalOcupatedBeds);
             if(totalOcupatedBeds > currentRoom[0].beds) {
                 available = false;
                 
@@ -175,17 +168,23 @@ function BookingPopup(props) {
             alert('Paturi indisponibile');
         } else {
             if (props.data.booking.id == null) {
-                if(state.guests.length === 0) {
+                //if(state.guests.length === 0) {
+                if(false) {
                     alert("Adauga cel putin 1 persoana in camera");
                 } else {
                     state.id = BookingHelper.guid();
+                    state.name = document.querySelector('[name=name]').value;
+                    state.noBeds = document.querySelector('[name=noBeds]').value;
+                    state.phone = document.querySelector('[name=phone]').value;
+                    state.county = document.querySelector('[name=county]').value;
+                    state.checkAvailability = true;
                     context.actionCreateBooking(state);
                     context.actionClosePopup();
                     
                 }
                 
             } else {
-                context.actionMoveBooking(state, state.room_id, state.from_date, state.to_date);
+                context.actionMoveBooking(state, state.room_id, state.startDate, state.endDate);
                 context.actionClosePopup();
             }
         }
@@ -193,134 +192,10 @@ function BookingPopup(props) {
         e.preventDefault();
     }
 
-    const removeGuestHandler = (e, guestId) => {
-
-        const filterGuest = state.guests.filter( (guest) => guest.id !== guestId);
-        let newState = {...state, guests: filterGuest};
-        setState(newState);
-        context.actionRemoveGuest(newState);
-        e.preventDefault();
-    }
-
-    const addGuestHandler = (e) => {
-
-        let intervalFound = false;
-        let available = true;
-        let varAux = document.querySelectorAll('.card-header.text-center')[0].childNodes[0].childNodes[0].innerText;
-        let currentRoom = context.data.rooms.filter( room => room.id === context.data.popup.booking.room_id );
-        let bookingsForCurrentRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
-        let daysForCurrentBooking = getDates(state.from_date, state.to_date);
-
-        daysForCurrentBooking.forEach( (day) => {
-            let currentDateTime = new Date(convertDate(day)).getTime();
-
-            bookingsForCurrentRoom.forEach( bk => {
-                let datesBooking = BookingHelper.getAllBookingDates(bk);
-                datesBooking.forEach( (bkDay) => {
-                    let currentBkDay = new Date(convertDate(bkDay)).getTime();
-                    if(currentBkDay === currentDateTime) intervalFound = true;
-                });
-            });
-        });
-
-        //If the inverval intersects with other interval for this booking
-        //We hate to get that booking and get all the used beds
-        if(intervalFound) {
-
-            daysForCurrentBooking.forEach( (day) => {
-
-                let currentDateTime = new Date(convertDate(day)).getTime();
-                let totalOcupatedBeds = 0;
-
-                bookingsForCurrentRoom.forEach( bk => {
-                   
-                    let datesBooking = BookingHelper.getAllBookingDates(bk);
-
-                    datesBooking.forEach( (bkDay) => {
-                        let currentBkDay = new Date(convertDate(bkDay)).getTime();
-                        
-                        if(currentBkDay === currentDateTime) {
-                            
-                            bk.guests.forEach( guest => {
-                                totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
-                            })
-    
-                            if(varAux === "Rezervare Noua") {
-                                state.guests.forEach( currentBk => {
-                                    totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
-                                });
-                            }
-                        }
-                    });
-                });
-
-                totalOcupatedBeds = parseInt(document.querySelector('[name=new_guest_beds]').value) + totalOcupatedBeds;
-                if(totalOcupatedBeds > currentRoom[0].beds) {
-                    available = false;
-                }
-            });
-
-        } else {
-
-            let totalOcupatedBeds = 0;
-
-            state.guests.forEach( ( guest ) => {
-                totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
-            });
-
-            totalOcupatedBeds = parseInt(document.querySelector('[name=new_guest_beds]').value) + parseInt(totalOcupatedBeds);
-
-            if(totalOcupatedBeds > currentRoom[0].beds) {
-                available = false;
-            }
-        }
-
-        if (available === false) {
-            alert('Paturi indisponibile');
-        } else {
-            if (document.querySelector('[name=new_guest_name]').value !== '' && document.querySelector('[name=new_guest_age]').value != '' && parseInt(document.querySelector('[name=new_guest_beds]').value) > 0) {
-                let newState = {...state};
-                newState.guests.push({
-                    id:BookingHelper.guid(),
-                    name:document.querySelector('[name=new_guest_name]').value,
-                    age:document.querySelector('[name=new_guest_age]').value,
-                    beds:document.querySelector('[name=new_guest_beds]').value,
-                    security_number: document.querySelector('[name=new_guest_security_no]').value
-                });
-                setState(newState);
-                document.querySelector('[name=new_guest_name]').value = '';
-                document.querySelector('[name=new_guest_age]').value = '';
-                document.querySelector('[name=new_guest_beds]').value = '';
-                document.querySelector('[name=new_guest_security_no]').value = '';
-            }
-        }
-
-        e.preventDefault();
-    };
-
     let style = props.data.show === false ? {display:"none",zIndex:-1} : {display:'block',zIndex:10};
-
-    const changeCount = (name, direction, event) => {
-        let input = document.querySelector('input[name='+name+']');
-        let inputValue = input.value !== "" ? input.value : 0;
-        
-        if (direction === 'up') {
-            inputValue++;
-        } else if (inputValue > 0) {
-            inputValue--;
-        }
-        input.value = inputValue;
-        
-        let newState = {...state};
-        newState[name] = inputValue;
-        setState(newState);
-        
-        event.preventDefault();
-    }
 
     const deleteRezervation = (e) => {
         
-        //console.log(props);
         setState(null);
         context.actionClosePopup();
         props.deleteRezervation();
@@ -364,18 +239,41 @@ function BookingPopup(props) {
 
 
     let heading = (state.id == null) ? 'Rezervare Noua' : 'Editeaza Rezervare';
-
-    let guestJsx = state.guests.map((guest, index) => {
-        return <tr id={guest.id} key={index}>
-                <td>{index + 1}</td>
-                <td>{guest.name}</td>
-                <td>{guest.beds}</td>
-                <td>{guest.age}</td>
-                <td>{guest.security_number}</td>
-                <td><button className="btn btn-danger" onClick={(e) => removeGuestHandler(e, guest.id)}>Sterge</button></td>
-            </tr>;
-    })
-
+    let guestJsx = "";
+    if(state.id != null) {
+        guestJsx =  <tr>
+                        <td></td>
+                        <td>
+                            <input type="text" className="form-control" value={state.name} name="name" placeholder="Nume" />
+                        </td>
+                        <td>
+                            <input type="text" className="form-control" value={state.noBeds} name="noBeds" onKeyPress={validateInput} id="nrOfBeds" placeholder="Paturi" />
+                        </td>
+                        <td>
+                            <input type="text" className="form-control" value={state.phone} name="phone" placeholder="Telefon" />
+                        </td>
+                        <td>
+                            <input type="text" className="form-control" value={state.county} name="county" placeholder="Judet/Localitate" />
+                        </td>
+                    </tr>;
+    } else {
+        guestJsx =  <tr>
+                        <td></td>
+                        <td>
+                            <input type="text" className="form-control" name="name" placeholder="Nume" />
+                        </td>
+                        <td>
+                            <input type="text" className="form-control" name="noBeds" onKeyPress={validateInput} id="nrOfBeds" placeholder="Paturi" />
+                        </td>
+                        <td>
+                            <input type="text" className="form-control" name="phone" placeholder="Telefon" />
+                        </td>
+                        <td>
+                            <input type="text" className="form-control" name="county" placeholder="Judet/Localitate" />
+                        </td>
+                    </tr>;
+    }
+    
     return (
         <div className="popup-wrapper" style={style}>
             <div className="popup booking-popup">
@@ -397,17 +295,17 @@ function BookingPopup(props) {
                                 </div>
                                 <div className="col-md-3 ">
                                         <DatePicker
-                                        selected={state.from_date}
+                                        selected={state.startDate}
                                         dateFormat="dd.MM.yyyy"
-                                        onChange={date => dateChangeHandler('from_date', date)}
+                                        onChange={date => dateChangeHandler('startDate', date)}
                                         />
                                 </div>
                                 <div className="col-md-1"> &nbsp; &nbsp;- </div>
                                 <div className="col-md-3">
                                     <DatePicker
-                                        selected={state.to_date}
+                                        selected={state.endDate}
                                         dateFormat="dd.MM.yyyy"
-                                        onChange={date => dateChangeHandler('to_date', date)}
+                                        onChange={date => dateChangeHandler('endDate', date)}
                                         />
                                 </div>
                             </div>
@@ -422,41 +320,18 @@ function BookingPopup(props) {
                                         <th>Paturi</th>
                                         <th>Telefon</th>
                                         <th>Judet/Localitate</th>
-                                        <th>#</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {guestJsx}
                                 </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <input type="text" className="form-control" name="new_guest_name" placeholder="Nume" />
-                                        </td>
-                                        <td>
-                                            <input type="text" className="form-control" name="new_guest_beds" onKeyPress={validateInput} id="nrOfBeds" placeholder="Paturi" />
-                                        </td>
-                                        <td>
-                                            <input type="text" className="form-control" name="new_guest_age" placeholder="Telefon" />
-                                        </td>
-                                        <td>
-                                            <input type="text" className="form-control" name="new_guest_security_no" placeholder="Judet/Localitate" />
-                                        </td>
-                                    </tr>
-                                </tfoot>
                             </table>
-                            <div className="text-right">
-                            <button onClick={(e) => addGuestHandler(e)} className="btn btn-success btn-block1">ADAUGA PERSOANA</button>
-
-                            </div>
-
                             <hr/>
 
                             <div className="row">
                                 <div className="col-md-2"><h5>Informatii:</h5> </div>
                                 <div className="col-md-10">
-                                    <textarea name="objective" id=""  rows="3" className="form-control" onChange={(event) => onChangeHandler(event)} defaultValue={state.objective}></textarea>
+                                    <textarea name="additionalInformation" id=""  rows="3" className="form-control" onChange={(event) => onChangeHandler(event)} defaultValue={state.additionalInformation}></textarea>
                                 </div>
                             </div>
                             <hr />

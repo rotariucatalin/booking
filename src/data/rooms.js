@@ -1,4 +1,4 @@
-export default  [
+  export default  [
     {
       id:1,
       title:"Studio (20)",
@@ -44,4 +44,4 @@ export default  [
       title:"Hollywood Twin Room (45)",
       beds: 45
     }
-];
+  ];

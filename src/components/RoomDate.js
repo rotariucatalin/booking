@@ -27,7 +27,7 @@ function RoomDate(props) {
     })
 
     const clickHandler = (event) => {
-        context.actionOpenPopup({room_id:props.room.id, from_date:props.day, to_date:props.day});
+        context.actionOpenPopup({room_id:props.room.id, startDate:props.day, endDate:props.day});
     }
 
     return (
