@@ -70,6 +70,11 @@ function App() {
 
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
+  const [bookings, setBookings] = useState(null);
+
+  //let bookings = [];
+  let currentDay = new Date();
+  let lastDay = new Date();
 
   useEffect(() => {   
     
@@ -81,10 +86,34 @@ function App() {
         rooms.forEach(function (room) {
           dispatch({ method: "showRooms", room: {roomData : room } });
         });
-      })
-  }, []);
+    })
 
-  let bookings = bookingData;
+    if(startDate === undefined && endDate === undefined) {
+      for (let i = 0; i < 120; i++) {
+        lastDay = new Date(currentDay.setDate(currentDay.getDate() + 1));
+      }
+      currentDay = new Date();
+
+    }
+
+    if(startDate !== undefined && endDate !== undefined) {
+      axios.get(`http://localhost:8080/v1/api/booking?startDate=${formatDate(currentDay)}&endDate=${formatDate(lastDay)}`)
+        .then(res => {
+          setBookings(res.data);
+        })
+    }
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+
+    lastDay = new Date(currentDay.setDate(currentDay.getDate() + 1));
+    currentDay = new Date();
+    
+    axios.get(`http://localhost:8080/v1/api/booking?startDate=${formatDate(currentDay)}&endDate=${formatDate(lastDay)}`)
+    .then(res => {
+      setBookings(res.data);
+    })
+  }, []);
 
   let currentDate = new Date();
   let viewStartDate = BookingHelper.formatDate(currentDate);
@@ -138,7 +167,21 @@ function App() {
       })
   }
 
-  return (
+  function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+  }
+
+  return bookings && (
     <div className="App">
       <h2 style={divStyle5}>Mănăstirea Sihăstria</h2>
       <div style={divStyle6} className="row justify-content-md-center">

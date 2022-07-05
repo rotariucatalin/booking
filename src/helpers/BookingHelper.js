@@ -51,7 +51,7 @@
      * Return All booking dates for the given booking
      **/
     export const getAllBookingDates = (singleBooking) => {
-        let from_date = new Date(singleBooking.from_date);
+        let from_date = new Date(singleBooking.startDate);
         let numberOfDays = numberOfDaysOfBooking(singleBooking);    
         return generateDates(from_date, numberOfDays);
     }

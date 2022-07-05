@@ -7,8 +7,8 @@ export default  [
     noBeds: 7,
     phone:"0745454545",
     county: "Savesti",
-    startDate:'2022-02-19',
-    endDate:'2022-02-20'
+    startDate:'2022-05-19',
+    endDate:'2022-05-20'
   },
   {
     id:3,
@@ -18,8 +18,8 @@ export default  [
     noBeds: 7,
     phone:"0745454545",
     county: "Savesti",
-    startDate:'2022-02-22',
-    endDate:'2022-02-23'
+    startDate:'2022-05-22',
+    endDate:'2022-05-23'
   },
   {
     id:2,
@@ -29,7 +29,7 @@ export default  [
     phone:"0748781781",
     noBeds: 8,
     county: "Galati",
-    startDate:'2022-02-19',
-    endDate:'2022-02-20'
+    startDate:'2022-05-25',
+    endDate:'2022-05-30'
   }
 ];

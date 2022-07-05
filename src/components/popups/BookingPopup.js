@@ -3,6 +3,7 @@ import CalendarContext from './../CalendarContext';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import BookingHelper from './../../helpers/BookingHelper';
+import axios from 'axios';
  
 
 function BookingPopup(props) {
@@ -44,47 +45,43 @@ function BookingPopup(props) {
     const checkAvailabilityHandler = (e) => {
 
         let varAux = document.querySelectorAll('.card-header.text-center')[0].childNodes[0].childNodes[0].innerText;
-
+        
         let available = true;
         let currentRoom = context.data.rooms.filter( room => room.id === context.data.popup.booking.room_id );
         let bookingsForCurrentRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
         let daysForCurrentBooking = getDates(state.startDate, state.endDate);
-
+        
         daysForCurrentBooking.forEach( (day) => {
-
+               
             let currentDateTime = new Date(convertDate(day)).getTime();
             let totalOcupatedBeds = 0;
-
+            
             bookingsForCurrentRoom.forEach( bk => {
                 
                 let datesBooking = BookingHelper.getAllBookingDates(bk);
-                
                 datesBooking.forEach( (bkDay) => {
+                    
                     let currentBkDay = new Date(convertDate(bkDay)).getTime();
                     
                     if(currentBkDay === currentDateTime) {
-                        
-                        // bk.guests.forEach( guest => {
 
-                        //     totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
-                            
-                        // })
+                        totalOcupatedBeds = parseInt(bk.noBeds) + parseInt(totalOcupatedBeds);
+                        
                         if(varAux !== "Editeaza Rezervare") {
-                            // state.guests.forEach( currentBk => {
-                            //     totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
-                            // });
+                            
+                            
+                            totalOcupatedBeds = parseInt(document.querySelector('[name=noBeds]').value) + parseInt(totalOcupatedBeds);
                         }
                     }
                 });
             })
             if(totalOcupatedBeds > currentRoom[0].beds) {
+        
                 available = false;
-                
             }
 
         } );
-    
-        //let status = context.actionCanExistBooking(state, state.room_id, state.from_date, state.to_date);
+        
         if (available === false) {
             alert('Paturi indisponibile');
         } else {
@@ -126,40 +123,42 @@ function BookingPopup(props) {
         let varAux = document.querySelectorAll('.card-header.text-center')[0].childNodes[0].childNodes[0].innerText;
         let available = true;
         let currentRoom = context.data.rooms.filter( room => room.id === context.data.popup.booking.room_id );
-        let bookingsForCurrentRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
+        let allBookingsForThisRoom = props.bookings.filter( (booking)  => booking.room_id === context.data.popup.booking.room_id);
         let daysForCurrentBooking = getDates(state.startDate, state.endDate);
+        let bookingsForCurrentRoom = allBookingsForThisRoom.filter( bk2 => bk2.id !== state.id );
 
         daysForCurrentBooking.forEach( (day) => {
 
             let currentDateTime = new Date(convertDate(day)).getTime();
             let totalOcupatedBeds = 0;
+            
+            if(bookingsForCurrentRoom.length === 0) {
+                totalOcupatedBeds = parseInt(document.querySelector('[name=noBeds]').value) + parseInt(totalOcupatedBeds);
+            } else {
 
-            bookingsForCurrentRoom.forEach( bk => {
-                
-                let datesBooking = BookingHelper.getAllBookingDates(bk);
-                
-                datesBooking.forEach( (bkDay) => {
-                    let currentBkDay = new Date(convertDate(bkDay)).getTime();
+                bookingsForCurrentRoom.forEach( bk => {
                     
-                    if(currentBkDay === currentDateTime) {
+                    let datesBooking = BookingHelper.getAllBookingDates(bk);
+                    
+                    datesBooking.forEach( (bkDay) => {
                         
-                        // bk.guests.forEach( guest => {
-
-                        //     totalOcupatedBeds = parseInt(guest.beds) + parseInt(totalOcupatedBeds);
+                        let currentBkDay = new Date(convertDate(bkDay)).getTime();
+                        
+                        if(currentBkDay === currentDateTime) {
+                           
+                            totalOcupatedBeds = parseInt(bk.noBeds) + parseInt(totalOcupatedBeds);
                             
-                        // })
-
-                        if(varAux !== "Editeaza Rezervare") {
-                            // state.guests.forEach( currentBk => {
-                            //     totalOcupatedBeds = parseInt(currentBk.beds) + parseInt(totalOcupatedBeds);
-                            // });
+                            if(varAux === "Editeaza Rezervare") {
+                                
+                                totalOcupatedBeds = parseInt(document.querySelector('[name=noBeds]').value) + parseInt(totalOcupatedBeds);
+                            }
                         }
-                    }
-                });
-            })
+                    });
+                })
+            }
+            //console.log(totalOcupatedBeds, currentRoom[0].beds);
             if(totalOcupatedBeds > currentRoom[0].beds) {
                 available = false;
-                
             }
 
         } );
@@ -169,22 +168,90 @@ function BookingPopup(props) {
         } else {
             if (props.data.booking.id == null) {
                 //if(state.guests.length === 0) {
-                if(false) {
-                    alert("Adauga cel putin 1 persoana in camera");
+                let mandatory = false;
+                const name = document.querySelector('[name=name]').value;
+                const noBeds = document.querySelector('[name=noBeds]').value;
+                const phone = document.querySelector('[name=phone]').value;
+                const county = document.querySelector('[name=county]').value;
+                const additionalInformation = document.querySelector('[name=additionalInformation]').value;
+                
+                if(name === '')      mandatory = true;
+                if(noBeds === '')    mandatory = true;
+                if(phone === '')     mandatory = true;
+                if(county === '')    mandatory = true;
+                if(state.startDate === '')  mandatory = true;
+                if(state.endDate === '')    mandatory = true;
+
+                if(mandatory) {
+                    alert("Toate campurile sunt obligatorii");
                 } else {
-                    state.id = BookingHelper.guid();
-                    state.name = document.querySelector('[name=name]').value;
-                    state.noBeds = document.querySelector('[name=noBeds]').value;
-                    state.phone = document.querySelector('[name=phone]').value;
-                    state.county = document.querySelector('[name=county]').value;
-                    state.checkAvailability = true;
-                    context.actionCreateBooking(state);
-                    context.actionClosePopup();
+
+                    axios.post(`http://localhost:8080/v1/api/booking`, {
+                        roomId: currentRoom[0].id,
+                        name: name,
+                        phoneNumber: phone,
+                        city: county,
+                        additionalDetails: additionalInformation,
+                        startDate: state.startDate,
+                        endDate: state.endDate,
+                        requiredBed: noBeds
+                    }).then(function (response) {
+                        
+                        let newBooking = {...state};
+                        newBooking.id = response.data.bookings[0].id;
+                        newBooking.room_id = currentRoom[0].id;
+                        newBooking.name = name;
+                        newBooking.noBeds = noBeds;
+                        newBooking.phone = phone;
+                        newBooking.county = county;
+                        newBooking.checkAvailability = true;
+                        
+                        setState(newBooking);
+                        context.actionCreateBooking(newBooking);
+                        
+                      })
+                    .catch( err =>{
+
+                    }).finally( () => {
+                        
+                        context.actionClosePopup();
+                    } );
                     
                 }
                 
             } else {
-                context.actionMoveBooking(state, state.room_id, state.startDate, state.endDate);
+                
+                axios.put(`http://localhost:8080/v1/api/booking-update/${state.id}`, {
+                    roomId: currentRoom[0].id,
+                    name: document.querySelector('[name=name]').value,
+                    phoneNumber: document.querySelector('[name=phone]').value,
+                    city: document.querySelector('[name=county]').value,
+                    additionalDetails: document.querySelector('[name=additionalInformation]').value,
+                    startDate: state.startDate,
+                    endDate: state.endDate,
+                    requiredBed: document.querySelector('[name=noBeds]').value
+                })
+                .then( response => {
+
+                    let newBooking = {...state};
+                    newBooking.id = response.data.bookings[0].id;
+                    newBooking.room_id = currentRoom[0].id;
+                    newBooking.name = response.data.name;
+                    newBooking.noBeds = response.data.bookings[0].requiredBed;
+                    newBooking.phone = response.data.phoneNumber;
+                    newBooking.county = response.data.city;
+                    newBooking.checkAvailability = true;
+                    setState(newBooking);
+                    context.actionMoveBooking(newBooking, state.room_id, state.startDate, state.endDate);
+                    
+                })
+                .catch( err => {
+                    console.log(err);
+                })
+                .finally( () =>{
+                    
+                    
+                });
                 context.actionClosePopup();
             }
         }
@@ -244,16 +311,16 @@ function BookingPopup(props) {
         guestJsx =  <tr>
                         <td></td>
                         <td>
-                            <input type="text" className="form-control" value={state.name} name="name" placeholder="Nume" />
+                            <input type="text" className="form-control" defaultValue={state.name} name="name" placeholder="Nume" />
                         </td>
                         <td>
-                            <input type="text" className="form-control" value={state.noBeds} name="noBeds" onKeyPress={validateInput} id="nrOfBeds" placeholder="Paturi" />
+                            <input type="text" className="form-control" defaultValue={state.noBeds} name="noBeds" onKeyPress={validateInput} id="nrOfBeds" placeholder="Paturi" />
                         </td>
                         <td>
-                            <input type="text" className="form-control" value={state.phone} name="phone" placeholder="Telefon" />
+                            <input type="text" className="form-control" defaultValue={state.phone} name="phone" placeholder="Telefon" />
                         </td>
                         <td>
-                            <input type="text" className="form-control" value={state.county} name="county" placeholder="Judet/Localitate" />
+                            <input type="text" className="form-control" defaultValue={state.county} name="county" placeholder="Judet/Localitate" />
                         </td>
                     </tr>;
     } else {
