@@ -106,7 +106,7 @@ function RoomComponent({roomsData, updateRooms, deleteRoom, addNewRoom}) {
                 mode: 'dbclick',
                 onStartEdit: (row, column, rowIndex, columnIndex) => { console.log('start to edit!!!'); },
                 beforeSaveCell: (oldValue, newValue, row, column) => { console.log('Before Saving Cell!!'); },
-                afterSaveCell: (oldValue, newValue, row, column) => { updateRooms() }
+                afterSaveCell: (oldValue, newValue, row, column) => { updateRooms(row) }
               }) }
             />
           <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title" maxWidth="lg">
