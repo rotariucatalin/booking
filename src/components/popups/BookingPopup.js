@@ -26,6 +26,7 @@ function BookingPopup(props) {
     }, props.data.booking, );
 
     const [state, setState] = useState( booking );
+    const [bed, setBed] = useState(state.id !== null ? state.noBeds : "");
 
     const onChangeHandler = (event) => {
         let newBooking = {...state};
@@ -286,11 +287,27 @@ function BookingPopup(props) {
         });
       }
     
-    function validateInput(e) {
-        setInputFilter(document.getElementById("nrOfBeds"), function(value) {
-            return /^\d*$/.test(value) && (parseInt(value) > 0); 
-        });
+    function validateInput(event) {
+       
+        var key = window.event ? event.keyCode : event.which;
+        if (event.keyCode === 8 || event.keyCode === 46
+         || event.keyCode === 37 || event.keyCode === 39) {
+            return true;
+        }
+        else if ( key < 48 || key > 57 ) {
+            return false;
+        }
+        else return true;
 
+    }
+
+    const handleKeyDown = (event) => {
+
+        const re = /^[0-9\b]+$/;
+
+        if (event.target.value === '' || re.test(event.target.value)) {
+            setBed(event.target.value)
+        }
     }
 
     let bottomActionButton = null;
@@ -314,7 +331,7 @@ function BookingPopup(props) {
                             <input type="text" className="form-control" defaultValue={state.name} name="name" placeholder="Nume" />
                         </td>
                         <td>
-                            <input type="text" className="form-control" defaultValue={state.noBeds} name="noBeds" onKeyPress={validateInput} id="nrOfBeds" placeholder="Paturi" />
+                            <input type="text" className="form-control" value={bed} name="noBeds" onChange={(e) => handleKeyDown(e)}  id="nrOfBeds" placeholder="Paturi" />
                         </td>
                         <td>
                             <input type="text" className="form-control" defaultValue={state.phone} name="phone" placeholder="Telefon" />
@@ -330,7 +347,7 @@ function BookingPopup(props) {
                             <input type="text" className="form-control" name="name" placeholder="Nume" />
                         </td>
                         <td>
-                            <input type="text" className="form-control" name="noBeds" onKeyPress={validateInput} id="nrOfBeds" placeholder="Paturi" />
+                            <input type="text" className="form-control" name="noBeds" value={bed} onChange={(e) => handleKeyDown(e)} id="nrOfBeds" placeholder="Paturi" />
                         </td>
                         <td>
                             <input type="text" className="form-control" name="phone" placeholder="Telefon" />
