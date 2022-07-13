@@ -90,7 +90,7 @@ function App() {
 
     if(startDate === undefined && endDate === undefined) {
       for (let i = 0; i < 120; i++) {
-        lastDay = new Date(currentDay.setDate(currentDay.getDate() + 1));
+        lastDay = new Date(currentDay.setDate(currentDay.getDate() + i));
       }
       currentDay = new Date();
 
@@ -106,7 +106,7 @@ function App() {
 
   useEffect(() => {
 
-    lastDay = new Date(currentDay.setDate(currentDay.getDate() + 1));
+    lastDay = new Date(currentDay.setDate(currentDay.getDate() + 15));
     currentDay = new Date();
     
     axios.get(`http://localhost:8080/v1/api/booking?startDate=${formatDate(currentDay)}&endDate=${formatDate(lastDay)}`)
